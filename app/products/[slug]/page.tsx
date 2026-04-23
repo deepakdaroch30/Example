@@ -6,8 +6,8 @@ import { Footer } from '@/components/footer';
 import { Navbar } from '@/components/navbar';
 import { getProductBySlug } from '@/lib/products';
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const product = getProductBySlug(params.slug);
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const product = await getProductBySlug(params.slug);
 
   if (!product) {
     return { title: 'Product Not Found' };
@@ -19,8 +19,8 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = getProductBySlug(params.slug);
+export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
+  const product = await getProductBySlug(params.slug);
 
   if (!product) {
     notFound();

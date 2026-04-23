@@ -1,6 +1,7 @@
-import type { Product } from '@/types/product';
+import { fetchShopifyProducts, hasShopifyConfig } from '@/lib/shopify/storefront';
+import type { Product, ProductQuery } from '@/types/product';
 
-export const products: Product[] = [
+export const fallbackProducts: Product[] = [
   {
     id: 'prod_1',
     slug: 'ivory-zari-blossom',
@@ -76,26 +77,8 @@ export const products: Product[] = [
   }
 ];
 
-export type ProductQuery = {
-  category?: string;
-  tag?: string;
-  sort?: 'featured' | 'price-asc' | 'price-desc' | 'rating';
-};
-
-export const productCategories = ['all', ...new Set(products.map((product) => product.category))];
-export const productTags = [...new Set(products.flatMap((product) => product.tags))];
-
-export const getProductBySlug = (slug: string) => products.find((product) => product.slug === slug);
-
-export const getFilteredProducts = ({ category, tag, sort = 'featured' }: ProductQuery) => {
-  const filtered = products.filter((product) => {
-    const matchesCategory = category && category !== 'all' ? product.category === category : true;
-    const matchesTag = tag ? product.tags.includes(tag) : true;
-
-    return matchesCategory && matchesTag;
-  });
-
-  const sorted = [...filtered];
+const sortProducts = (items: Product[], sort: ProductQuery['sort']) => {
+  const sorted = [...items];
 
   if (sort === 'price-asc') {
     sorted.sort((a, b) => a.price - b.price);
@@ -111,3 +94,36 @@ export const getFilteredProducts = ({ category, tag, sort = 'featured' }: Produc
 
   return sorted;
 };
+
+export const getFilteredProducts = (items: Product[], { category, tag, sort = 'featured' }: ProductQuery) => {
+  const filtered = items.filter((product) => {
+    const matchesCategory = category && category !== 'all' ? product.category === category : true;
+    const matchesTag = tag ? product.tags.includes(tag) : true;
+
+    return matchesCategory && matchesTag;
+  });
+
+  return sortProducts(filtered, sort);
+};
+
+export const getProductCategories = (items: Product[]) => ['all', ...new Set(items.map((product) => product.category))];
+export const getProductTags = (items: Product[]) => [...new Set(items.flatMap((product) => product.tags))];
+
+export async function getProductsData() {
+  if (!hasShopifyConfig()) {
+    return fallbackProducts;
+  }
+
+  const shopifyProducts = await fetchShopifyProducts();
+
+  if (shopifyProducts.length === 0) {
+    return fallbackProducts;
+  }
+
+  return shopifyProducts;
+}
+
+export async function getProductBySlug(slug: string) {
+  const products = await getProductsData();
+  return products.find((product) => product.slug === slug);
+}

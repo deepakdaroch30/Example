@@ -5,7 +5,7 @@ import { SectionHeading } from '@/components/ui/section-heading';
 import { Footer } from '@/components/footer';
 import { Navbar } from '@/components/navbar';
 import { ProductGrid } from '@/components/products/product-grid';
-import { getFilteredProducts, productCategories, productTags } from '@/lib/products';
+import { getFilteredProducts, getProductCategories, getProductsData, getProductTags } from '@/lib/products';
 
 export const metadata: Metadata = {
   title: 'Products',
@@ -20,16 +20,21 @@ type ProductsPageProps = {
   };
 };
 
-export default function ProductsPage({ searchParams }: ProductsPageProps) {
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const activeCategory = searchParams?.category ?? 'all';
   const activeTag = searchParams?.tag;
   const activeSort = searchParams?.sort ?? 'featured';
 
-  const filteredProducts = getFilteredProducts({
+  const products = await getProductsData();
+
+  const filteredProducts = getFilteredProducts(products, {
     category: activeCategory,
     tag: activeTag,
     sort: activeSort
   });
+
+  const productCategories = getProductCategories(products);
+  const productTags = getProductTags(products);
 
   return (
     <main>

@@ -5,14 +5,20 @@ export type Product = {
   subtitle: string;
   price: number;
   compareAtPrice?: number;
-  currencyCode: 'USD';
+  currencyCode: string;
   images: string[];
   colors: string[];
   sizes: string[];
-  category: 'bridal' | 'festive' | 'silk' | 'partywear';
+  category: string;
   tags: string[];
   rating: number;
   reviewCount: number;
   description: string;
   details: string[];
+};
+
+export type ProductQuery = {
+  category?: string;
+  tag?: string;
+  sort?: 'featured' | 'price-asc' | 'price-desc' | 'rating';
 };
